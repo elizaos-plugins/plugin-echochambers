@@ -20,7 +20,8 @@
     ],
     "dependencies": {
         "@elizaos/core": "workspace:*",
-        "@elizaos/plugin-node": "workspace:*"
+        "@elizaos/plugin-node": "workspace:*",
+        "@types/lodash": "^4.17.14"
     },
     "scripts": {
         "build": "tsup --format esm --dts",
