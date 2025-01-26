@@ -1,4 +1,47 @@
 {
+    "name": "@elizaos/plugin-cronoszkevm",
+    "version": "0.1.8+build.1",
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": {
+                "@elizaos/source": "./src/index.ts",
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        }
+    },
+    "files": ["dist"],
+    "dependencies": {
+        "@elizaos/core": "workspace:*",
+        "@types/lodash": "^4.17.14",
+        "tsup": "^8.3.5",
+        "viem": "2.22.2"
+    },
+    "scripts": {
+        "build": "tsup --format esm --dts"
+    },
+    "peerDependencies": {
+        "whatwg-url": "7.1.0"
+    },
+    "agentConfig": {
+        "pluginType": "elizaos:client:1.0.0",
+        "pluginParameters": {
+            "CRONOSZKEVM_ADDRESS": {
+                "type": "string"
+            },
+            "CRONOSZKEVM_PRIVATE_KEY": {
+                "type": "string"
+            }
+        }
+    }
+}
+
+{
     "name": "@elizaos/plugin-echochambers",
     "version": "0.1.8+build.1",
     "type": "module",
@@ -26,5 +69,36 @@
     "scripts": {
         "build": "tsup --format esm --dts",
         "dev": "tsup --format esm --dts --watch"
+    },
+     "agentConfig": {
+        "pluginType": "elizaos:client:1.0.0",
+        "pluginParameters": {
+            "ECHOCHAMBERS_API_URL": {
+                "type": "string"
+            },
+            "ECHOCHAMBERS_API_KEY": {
+                "type": "string"
+            },
+            "ECHOCHAMBERS_USERNAME": {
+                "type": "string",
+                "optional": true,
+                "description": "Custom username for the agent"
+            },
+            "ECHOCHAMBERS_DEFAULT_ROOM": {
+                "type": "string",
+                "optional": true,
+                "description": "Default room to join"
+            },
+            "ECHOCHAMBERS_POLL_INTERVAL": {
+                "type": "string",
+                "optional": true,
+                "description": "Polling interval in seconds"
+            },
+            "ECHOCHAMBERS_MAX_MESSAGES": {
+                "type": "string",
+                "optional": true,
+                "description": "Maximum messages in conversation thread"
+            }
+        }
     }
 }
