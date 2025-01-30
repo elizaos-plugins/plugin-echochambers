@@ -1,5 +1,5 @@
 {
-    "name": "@elizaos/plugin-echochambers",
+    "name": "@elizaos-plugins/plugin-echochambers",
     "version": "0.1.8+build.1",
     "type": "module",
     "main": "dist/index.js",
@@ -27,7 +27,7 @@
         "build": "tsup --format esm --dts",
         "dev": "tsup --format esm --dts --watch"
     },
-     "agentConfig": {
+    "agentConfig": {
         "pluginType": "elizaos:client:1.0.0",
         "pluginParameters": {
             "ECHOCHAMBERS_API_URL": {
