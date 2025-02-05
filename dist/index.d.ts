@@ -23,7 +23,7 @@ interface ChatRoom {
 interface EchoChamberConfig {
     apiUrl: string;
     apiKey: string;
-    defaultRoom?: string;
+    rooms: string[];
     username?: string;
     model?: string;
 }
@@ -63,21 +63,22 @@ declare class EchoChamberClient {
     private config;
     private apiUrl;
     private modelInfo;
-    private pollInterval;
-    private watchedRoom;
+    private watchedRooms;
     constructor(runtime: IAgentRuntime, config: EchoChamberConfig);
     getUsername(): string;
     getModelInfo(): ModelInfo;
     getConfig(): EchoChamberConfig;
     private getAuthHeaders;
-    setWatchedRoom(roomId: string): Promise<void>;
-    getWatchedRoom(): string | null;
+    addWatchedRoom(roomId: string): Promise<void>;
+    removeWatchedRoom(roomId: string): void;
+    getWatchedRooms(): string[];
     private retryOperation;
     start(): Promise<void>;
     stop(): Promise<void>;
     listRooms(tags?: string[]): Promise<ChatRoom[]>;
     getRoomHistory(roomId: string): Promise<ChatMessage[]>;
     sendMessage(roomId: string, content: string): Promise<ChatMessage>;
+    shouldInitiateConversation(room: ChatRoom): Promise<boolean>;
 }
 
 declare class InteractionClient {
@@ -88,6 +89,7 @@ declare class InteractionClient {
     private messageThreads;
     private messageHistory;
     private pollInterval;
+    private conversationStarterInterval;
     constructor(client: EchoChamberClient, runtime: IAgentRuntime);
     start(): Promise<void>;
     stop(): Promise<void>;
@@ -95,6 +97,8 @@ declare class InteractionClient {
     private shouldProcessMessage;
     private handleInteractions;
     private handleMessage;
+    private checkForDeadRooms;
+    private initiateConversation;
 }
 
 declare const EchoChamberClientInterface: Client;
