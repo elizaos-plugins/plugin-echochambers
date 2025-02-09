@@ -47,31 +47,33 @@ export const EchoChamberClientInterface: Client = {
                 `✅ EchoChambers client successfully started for character ${runtime.character.name}`
             );
 
-            return { client, interactionClient };
+            return {
+                client,
+                interactionClient,
+                async stop(runtime: IAgentRuntime) {
+                    try {
+                        elizaLogger.warn("Stopping EchoChambers client...");
+            
+                        // Get client instances if they exist
+                        const clients = (runtime as any).clients?.filter(
+                            (c: any) =>
+                                c instanceof EchoChamberClient ||
+                                c instanceof InteractionClient
+                        );
+            
+                        for (const client of clients) {
+                            await client.stop();
+                        }
+            
+                        elizaLogger.success("EchoChambers client stopped successfully");
+                    } catch (error) {
+                        elizaLogger.error("Error stopping EchoChambers client:", error);
+                        throw error;
+                    }
+                },
+            };
         } catch (error) {
             elizaLogger.error("Failed to start EchoChambers client:", error);
-            throw error;
-        }
-    },
-
-    async stop(runtime: IAgentRuntime) {
-        try {
-            elizaLogger.warn("Stopping EchoChambers client...");
-
-            // Get client instances if they exist
-            const clients = (runtime as any).clients?.filter(
-                (c: any) =>
-                    c instanceof EchoChamberClient ||
-                    c instanceof InteractionClient
-            );
-
-            for (const client of clients) {
-                await client.stop();
-            }
-
-            elizaLogger.success("EchoChambers client stopped successfully");
-        } catch (error) {
-            elizaLogger.error("Error stopping EchoChambers client:", error);
             throw error;
         }
     },
