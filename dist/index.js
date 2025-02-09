@@ -1,4 +1,4 @@
-// src/index.ts
+// src/client.ts
 import { elizaLogger as elizaLogger4 } from "@elizaos/core";
 
 // src/echoChamberClient.ts
@@ -94,7 +94,7 @@ var EchoChamberClient = class {
   async listRooms(tags) {
     try {
       const url = new URL(this.apiUrl);
-      if (tags?.length) {
+      if (tags == null ? void 0 : tags.length) {
         url.searchParams.append("tags", tags.join(","));
       }
       const response = await fetch(url.toString());
@@ -142,7 +142,7 @@ var EchoChamberClient = class {
   async shouldInitiateConversation(room) {
     try {
       const history = await this.getRoomHistory(room.id);
-      if (!history?.length) return true;
+      if (!(history == null ? void 0 : history.length)) return true;
       const recentMessages = history.filter((msg) => msg != null).sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
@@ -405,12 +405,13 @@ var InteractionClient = class {
     }
   }
   async handleMessage(message, roomTopic) {
+    var _a, _b, _c, _d;
     try {
-      const content = `${message.content?.substring(0, 50)}...`;
+      const content = `${(_a = message.content) == null ? void 0 : _a.substring(0, 50)}...`;
       elizaLogger2.debug("Processing message:", {
         id: message.id,
         room: message.roomId,
-        sender: message?.sender?.username,
+        sender: (_b = message == null ? void 0 : message.sender) == null ? void 0 : _b.username,
         content: `${content}`
       });
       const roomId = stringToUuid(message.roomId);
@@ -458,7 +459,7 @@ var InteractionClient = class {
       state = await this.runtime.updateRecentMessageState(state);
       const shouldRespondContext = composeContext({
         state,
-        template: this.runtime.character.templates?.shouldRespondTemplate || createShouldRespondTemplate(message.roomId, roomTopic)
+        template: ((_c = this.runtime.character.templates) == null ? void 0 : _c.shouldRespondTemplate) || createShouldRespondTemplate(message.roomId, roomTopic)
       });
       const shouldRespond = await generateShouldRespond({
         runtime: this.runtime,
@@ -473,7 +474,7 @@ var InteractionClient = class {
       }
       const responseContext = composeContext({
         state,
-        template: this.runtime.character.templates?.messageHandlerTemplate || createMessageTemplate(message.roomId, roomTopic)
+        template: ((_d = this.runtime.character.templates) == null ? void 0 : _d.messageHandlerTemplate) || createMessageTemplate(message.roomId, roomTopic)
       });
       const response = await generateMessageResponse({
         runtime: this.runtime,
@@ -609,6 +610,7 @@ var InteractionClient = class {
     }
   }
   async initiateConversation(room) {
+    var _a;
     try {
       elizaLogger2.debug(`Starting initiateConversation for ${room.name}`);
       const dummyMemory = {
@@ -641,9 +643,9 @@ var InteractionClient = class {
       });
       elizaLogger2.debug("Generated response content:", {
         hasContent: !!content,
-        textLength: content?.text?.length
+        textLength: (_a = content == null ? void 0 : content.text) == null ? void 0 : _a.length
       });
-      if (content?.text) {
+      if (content == null ? void 0 : content.text) {
         elizaLogger2.debug(`Sending message to ${room.name}`);
         await this.client.sendMessage(room.id, content.text);
         elizaLogger2.info(
@@ -673,6 +675,7 @@ var InteractionClient = class {
 // src/environment.ts
 import { elizaLogger as elizaLogger3 } from "@elizaos/core";
 async function validateEchoChamberConfig(runtime) {
+  var _a;
   const apiUrl = runtime.getSetting("ECHOCHAMBERS_API_URL");
   const apiKey = runtime.getSetting("ECHOCHAMBERS_API_KEY");
   if (!apiUrl) {
@@ -696,7 +699,7 @@ async function validateEchoChamberConfig(runtime) {
     throw new Error("Invalid ECHOCHAMBERS_API_URL format");
   }
   const username = runtime.getSetting("ECHOCHAMBERS_USERNAME") || `agent-${runtime.agentId}`;
-  const rooms = runtime.getSetting("ECHOCHAMBERS_ROOMS")?.split(",").map((r) => r.trim()) || ["general"];
+  const rooms = ((_a = runtime.getSetting("ECHOCHAMBERS_ROOMS")) == null ? void 0 : _a.split(",").map((r) => r.trim())) || ["general"];
   const pollInterval = Number(
     runtime.getSetting("ECHOCHAMBERS_POLL_INTERVAL") || 120
   );
@@ -713,20 +716,11 @@ async function validateEchoChamberConfig(runtime) {
   elizaLogger3.log(`Poll Interval: ${pollInterval}s`);
 }
 
-// src/types.ts
-var RoomEvent = /* @__PURE__ */ ((RoomEvent2) => {
-  RoomEvent2["MESSAGE_CREATED"] = "message_created";
-  RoomEvent2["ROOM_CREATED"] = "room_created";
-  RoomEvent2["ROOM_UPDATED"] = "room_updated";
-  RoomEvent2["ROOM_JOINED"] = "room_joined";
-  RoomEvent2["ROOM_LEFT"] = "room_left";
-  return RoomEvent2;
-})(RoomEvent || {});
-
-// src/index.ts
+// src/client.ts
 var EchoChamberClientInterface = {
   name: "echochamber",
   async start(runtime) {
+    var _a;
     try {
       await validateEchoChamberConfig(runtime);
       const apiUrl = runtime.getSetting("ECHOCHAMBERS_API_URL");
@@ -741,7 +735,7 @@ var EchoChamberClientInterface = {
         apiKey,
         username: runtime.getSetting("ECHOCHAMBERS_USERNAME") || `agent-${runtime.agentId}`,
         model: runtime.modelProvider,
-        rooms: runtime.getSetting("ECHOCHAMBERS_ROOMS")?.split(",").map((r) => r.trim()) || ["general"]
+        rooms: ((_a = runtime.getSetting("ECHOCHAMBERS_ROOMS")) == null ? void 0 : _a.split(",").map((r) => r.trim())) || ["general"]
       };
       elizaLogger4.log("Starting EchoChambers client...");
       const client = new EchoChamberClient(runtime, config);
@@ -751,28 +745,34 @@ var EchoChamberClientInterface = {
       elizaLogger4.success(
         `\u2705 EchoChambers client successfully started for character ${runtime.character.name}`
       );
-      return { client, interactionClient };
+      return {
+        client,
+        interactionClient,
+        async stop(runtime2) {
+          var _a2;
+          try {
+            elizaLogger4.warn("Stopping EchoChambers client...");
+            const clients = (_a2 = runtime2.clients) == null ? void 0 : _a2.filter(
+              (c) => c instanceof EchoChamberClient || c instanceof InteractionClient
+            );
+            for (const client2 of clients) {
+              await client2.stop();
+            }
+            elizaLogger4.success("EchoChambers client stopped successfully");
+          } catch (error) {
+            elizaLogger4.error("Error stopping EchoChambers client:", error);
+            throw error;
+          }
+        }
+      };
     } catch (error) {
       elizaLogger4.error("Failed to start EchoChambers client:", error);
       throw error;
     }
-  },
-  async stop(runtime) {
-    try {
-      elizaLogger4.warn("Stopping EchoChambers client...");
-      const clients = runtime.clients?.filter(
-        (c) => c instanceof EchoChamberClient || c instanceof InteractionClient
-      );
-      for (const client of clients) {
-        await client.stop();
-      }
-      elizaLogger4.success("EchoChambers client stopped successfully");
-    } catch (error) {
-      elizaLogger4.error("Error stopping EchoChambers client:", error);
-      throw error;
-    }
   }
 };
+
+// src/index.ts
 var echoChambersPlugin = {
   name: "echochambers",
   description: "Plugin for interacting with EchoChambers API to enable multi-agent communication",
@@ -786,10 +786,6 @@ var echoChambersPlugin = {
 };
 var index_default = echoChambersPlugin;
 export {
-  EchoChamberClient,
-  EchoChamberClientInterface,
-  InteractionClient,
-  RoomEvent,
   index_default as default,
   echoChambersPlugin
 };
